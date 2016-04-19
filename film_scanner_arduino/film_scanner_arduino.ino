@@ -9,10 +9,14 @@
  * LCD D6 pin to digital pin 4
  * LCD D7 pin to digital pin 5
  */
- #include <LiquidCrystal.h>
+#include <LiquidCrystal.h>
 LiquidCrystal lcd(12, 11, 2,3,4,5);
+
 int continueButton = 13;
 int continueButtonValue;
+
+int stmMove = 9
+int stmDir = 8
 
 /*********************************************************/
 /***************  lcdClearLine()  ************************/
@@ -59,6 +63,10 @@ void setup() {
   lcd.begin(16, 2);
   pinMode(continueButton,INPUT);
   Serial.begin(9600);
+  pinMode(stmDir, OUTPUT);     
+  pinMode(stmMove, OUTPUT);
+  digitalWrite(stmDir, LOW);
+  digitalWrite(stmMove, LOW);
 
 }
 
