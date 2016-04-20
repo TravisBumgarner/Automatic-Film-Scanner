@@ -21,19 +21,6 @@ int stmMovePin = 9;
 int stmDirPin = 8;
 
 /*********************************************************/
-/***************  lcdClearLine()  ************************/
-/*********************************************************/
-
-void lcdClearLine()
-{
-  lcd.setCursor(0, 1);
-  lcd.print("                                ");
-  lcd.setCursor(0, 0);
-  lcd.print("                                ");
-  lcd.setCursor(0, 0);
-}
-
-/*********************************************************/
 /***************  readInputButtons()  ********************/
 /*********************************************************/
 /*Reads the values of all the physical buttons in circuit*/
@@ -42,19 +29,18 @@ void readInputButtons() {
 }
 
 /*********************************************************/
-/************  systemStartupChecks()  ********************/
+/******************  wrapString()  ***********************/
 /*********************************************************/
-/*Checks that each part of the system is running before  */
-/* Continuing running                                    */
-void systemStartupChecks(String stringToCheck, String stringToCheckLine2 = "") {
-  while (continueButtonValue != 1) {
-    readInputButtons();
-    lcdClearLine();
-    lcd.print(stringToCheck);
-    lcd.setCursor(0, 1);
-    lcd.print(stringToCheckLine2);
+/*Wraps strings if they're longer than one line*/
+void wrapString(String unwrappedString){
+  String line2;
+  lcd.clear();
+  lcd.print(unwrappedString);
+  if (unwrappedString.length()>16){
+    line2 = unwrappedString.substring(16);
+    lcd.setCursor(0,1);
+    lcd.print(line2);
   }
-  delay(500);
 }
 
 /*********************************************************/
@@ -88,12 +74,12 @@ void calibrateStepperMotor() {
 /***************  numberOfPhotos()  **********************/
 /*********************************************************/
 /*Declare number of negatives to scan */
-void numberOfPhotos(){
+/*void numberOfPhotos(){
     while(continueButtonValue != HIGH){
         readInputButtons();
         lcd.setCursor(0,0);
         lcd.print("Negatives QTY:");
-        if(buttonSetValue == HIGH){ /******************************** Declare buttonSetValue *************/
+        if(buttonSetValue == HIGH){ //* Declare buttonSetValue
             return;
         }
         if(buttonUp == HIGH) {numberOfPhotosToScan++;}
@@ -104,8 +90,44 @@ void numberOfPhotos(){
         delay(50);
     }
 }
+*/
 
 
+/*********************************************************/
+/************  systemStartupChecks()  ********************/
+/*********************************************************/
+
+void systemStartupChecks(){
+  int currentCheck = 0;
+  int totalChecks = 3; //Total checks is the number of steps to run through
+  while (currentCheck < totalChecks){
+    readInputButtons();
+    if (currentCheck == 0){
+      wrapString("Load film and tighten");
+      while(continueButtonValue != HIGH){
+        readInputButtons();
+        if (digitalRead(calibrateStepperMotorButton) == 1) {
+          calibrateStepperMotor();
+          Serial.println(digitalRead(calibrateStepperMotorButton));
+        }
+        }
+      currentCheck++;
+      delay(250);
+      }
+    else if (currentCheck == 1){
+      wrapString("Check Camera: Raw, Man, Level");
+      while(continueButtonValue != HIGH){readInputButtons();}
+      currentCheck++;
+      delay(250);
+    }
+    else if (currentCheck == 2){
+      wrapString("Adj stepper, take test shot");
+      while(continueButtonValue != HIGH){readInputButtons();}
+      currentCheck++;
+      delay(250);
+    }
+  }
+}
 
 /*********************************************************/
 /******************  setup()  ****************************/
@@ -127,17 +149,14 @@ void setup() {
 /******************  loop()  *****************************/
 /*********************************************************/
 void loop() {
-  systemStartupChecks("Load Film and  ", "Tighten");
-  readInputButtons();
-  systemStartupChecks("Check Camera:RAW", "M Mode, Level it");
-  readInputButtons();
-  systemStartupChecks("Adj Stepper", "Take Test Shot");
-  readInputButtons();
+  systemStartupChecks();
+  delay(5000);
+ /*
   while (continueButtonValue != 1) {
     if (digitalRead(calibrateStepperMotorButton) == HIGH) {
       calibrateStepperMotor();
     }
   }
-
+*/
 
 }
