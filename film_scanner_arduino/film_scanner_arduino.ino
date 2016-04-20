@@ -9,6 +9,9 @@
    LCD D6 pin to digital pin 4
    LCD D7 pin to digital pin 5
 */
+#include <Servo.h>
+Servo myservo;
+
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(12, 11, 2, 3, 4, 5);
 
@@ -92,6 +95,23 @@ void calibrateStepperMotor() {
 }
 */
 
+/*********************************************************/
+/***************  takePicture()  *************************/
+/*********************************************************/
+/* Script for using RX100 to take a picture */
+void takePicture(){
+  int pos = 0; 
+  for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+  for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+}
+
 
 /*********************************************************/
 /************  systemStartupChecks()  ********************/
@@ -121,7 +141,17 @@ void systemStartupChecks(){
       delay(250);
     }
     else if (currentCheck == 2){
-      wrapString("Adj stepper, take test shot");
+      lcd.clear();
+      lcd.print("Taking test shot");
+      for(int seconds = 5; seconds >=0; seconds--){
+        lcd.setCursor(0,1);
+        lcd.print(seconds);
+        delay(1000);
+        if (seconds ==2){
+          takePicture();        
+        }
+      }
+
       while(continueButtonValue != HIGH){readInputButtons();}
       currentCheck++;
       delay(250);
@@ -135,6 +165,7 @@ void systemStartupChecks(){
 
 void setup() {
   lcd.begin(16, 2);
+  myservo.attach(6);
   pinMode(continueButton, INPUT);
   pinMode(calibrateStepperMotorButton, INPUT);
   Serial.begin(9600);
