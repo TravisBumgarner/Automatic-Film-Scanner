@@ -47,21 +47,26 @@ void wrapString(String unwrappedString){
 }
 
 /*********************************************************/
-/***********************  stm()  *************************/
+/*********************  moveStm()  ***********************/
 /*********************************************************/
 /*Moves stepper motor in a specific direction with setDirection*/
 /*Moves stepper motor for a setDistance /*                                  */
-void stm(boolean setDirection, int setDistance) {
-  Serial.println(String(digitalRead(stmDirPin)) + " " + String(setDistance));
-  digitalWrite(stmDirPin, setDirection);
-  for (int i = 0; i < setDistance; i++) {
+void moveStm(boolean moveDirection=LOW, int moveDistance= 1350, int moveDelay=10) {
+  //stmDirPin High = CCW, stmDirPin Low = CW
+  //delay(1) - Very Fast, Delay(5) - OK, Delay(10) - Perfect
+  //At 12V DC, 1350 Microsteps = 37.5mm of linear distance with 
+  //current 3d printed part which is distance between center of 2x 36mm 
+  //negative images.
+  digitalWrite(stmDirPin, moveDirection);
+  for(int moveCounter = 1; moveCounter <= moveDistance; moveCounter++){
     digitalWrite(stmMovePin, HIGH);
-    delay(1);
+    delay(moveDelay);
     digitalWrite(stmMovePin, LOW);
-    delay(1);
+    delay(moveDelay);
+    Serial.println(moveCounter);
   }
+  delay(7500); //Modify this value to have enough time to take a picture.
 }
-
 /*********************************************************/
 /************  calibrateStepperMotor()  ******************/
 /*********************************************************/
@@ -180,8 +185,8 @@ void setup() {
 /******************  loop()  *****************************/
 /*********************************************************/
 void loop() {
-  systemStartupChecks();
-  delay(5000);
+  /*systemStartupChecks();
+  delay(5000);*/
  /*
   while (continueButtonValue != 1) {
     if (digitalRead(calibrateStepperMotorButton) == HIGH) {
@@ -189,5 +194,5 @@ void loop() {
     }
   }
 */
-
+  moveStm();
 }
