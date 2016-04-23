@@ -15,9 +15,13 @@ Servo myservo;
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(12, 11, 2, 3, 4, 5);
 
-int continueButton = 13;
+int buttonContinuePin = A3;
+int buttonUpPin = A2;
+int buttonDownPin = A1;
+boolean buttonUp;
+boolean buttonDown;
+boolean buttonContinue;
 int calibrateStepperMotorButton = 7;
-int continueButtonValue;
 int numberOfPhotosToScan;
 
 int stmMovePin = 9;
@@ -27,10 +31,17 @@ int stmDirPin = 8;
 /***************  readInputButtons()  ********************/
 /*********************************************************/
 /*Reads the values of all the physical buttons in circuit*/
-void readInputButtons() {
-  continueButtonValue = digitalRead(continueButton);
+void readInputButtons(){
+    int sum;
+    buttonUp = LOW;
+    buttonDown = LOW;
+    buttonContinue =  LOW;
+    if      (analogRead(buttonContinuePin)<100){buttonContinue = HIGH;}
+    else if (analogRead(buttonUpPin)<100){buttonUp = HIGH;}
+    else if (analogRead(buttonDownPin)<100){buttonDown = HIGH;}
+    Serial.println(buttonContinue);
+    Serial.println(analogRead(buttonContinuePin));
 }
-
 /*********************************************************/
 /******************  wrapString()  ***********************/
 /*********************************************************/
@@ -45,7 +56,6 @@ void wrapString(String unwrappedString){
     lcd.print(line2);
   }
 }
-
 /*********************************************************/
 /*********************  moveStm()  ***********************/
 /*********************************************************/
@@ -77,7 +87,6 @@ void calibrateStepperMotor() {
   digitalWrite(stmMovePin, LOW);
   delay(5);
 }
-
 /*********************************************************/
 /***************  numberOfPhotos()  **********************/
 /*********************************************************/
@@ -99,7 +108,6 @@ void calibrateStepperMotor() {
     }
 }
 */
-
 /*********************************************************/
 /***************  takePicture()  *************************/
 /*********************************************************/
@@ -116,8 +124,6 @@ void takePicture(){
     delay(15);                       // waits 15ms for the servo to reach the position
   }
 }
-
-
 /*********************************************************/
 /************  systemStartupChecks()  ********************/
 /*********************************************************/
@@ -129,7 +135,7 @@ void systemStartupChecks(){
     readInputButtons();
     if (currentCheck == 0){
       wrapString("Load film and tighten");
-      while(continueButtonValue != HIGH){
+      while(buttonContinue != HIGH){
         readInputButtons();
         if (digitalRead(calibrateStepperMotorButton) == 1) {
           calibrateStepperMotor();
@@ -141,7 +147,7 @@ void systemStartupChecks(){
       }
     else if (currentCheck == 1){
       wrapString("Check Camera: Raw, Man, Level");
-      while(continueButtonValue != HIGH){readInputButtons();}
+      while(buttonContinue != HIGH){readInputButtons();}
       currentCheck++;
       delay(250);
     }
@@ -157,7 +163,7 @@ void systemStartupChecks(){
         }
       }
 
-      while(continueButtonValue != HIGH){readInputButtons();}
+      while(buttonContinue != HIGH){readInputButtons();}
       currentCheck++;
       delay(250);
     }
@@ -171,7 +177,7 @@ void systemStartupChecks(){
 void setup() {
   lcd.begin(16, 2);
   myservo.attach(6);
-  pinMode(continueButton, INPUT);
+  pinMode(buttonContinue, INPUT);
   pinMode(calibrateStepperMotorButton, INPUT);
   Serial.begin(9600);
   pinMode(stmDirPin, OUTPUT);
@@ -185,14 +191,11 @@ void setup() {
 /******************  loop()  *****************************/
 /*********************************************************/
 void loop() {
-  /*systemStartupChecks();
-  delay(5000);*/
- /*
-  while (continueButtonValue != 1) {
+  systemStartupChecks();
+  delay(5000);
+  /*while (continueButtonValue != 1) {
     if (digitalRead(calibrateStepperMotorButton) == HIGH) {
       calibrateStepperMotor();
     }
-  }
-*/
-  moveStm();
+  }*/
 }
